@@ -13,10 +13,21 @@ interface IRequest {
 
 @injectable()
 class CreateProductService {
-  constructor(private productsRepository: IProductsRepository) {}
+  constructor(
+    @inject('ProductsRepository')
+    private productsRepository: IProductsRepository,
+  ) {}
 
   public async execute({ name, price, quantity }: IRequest): Promise<Product> {
-    // TODO
+    const productSameName = await this.productsRepository.findByName(name);
+
+    if (productSameName) {
+      throw new AppError('Cannot create a product with same name.');
+    }
+
+    const product = this.productsRepository.create({ name, price, quantity });
+
+    return product;
   }
 }
 
